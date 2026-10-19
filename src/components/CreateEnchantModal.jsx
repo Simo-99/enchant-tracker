@@ -31,7 +31,7 @@ export default function CreateEnchantModal({ onClose, onCreated }) {
     bow: false, crossbow: false, trident: false, mace: false, shield: false,
     fishing_rod: false, elytra: false
   });
-  
+
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -119,7 +119,16 @@ export default function CreateEnchantModal({ onClose, onCreated }) {
               />
             </div>
           </div>
-
+          <div>
+            <label className="text-xs text-slate-400 block mb-1">Description</label>
+            <textarea
+              rows="2"
+              placeholder="Describe what the enchantment does..."
+              value={newEnchant.description}
+              onChange={e => setNewEnchant({ ...newEnchant, description: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+            />
+          </div>
 
           <div>
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 block">Compatible Items</label>
