@@ -31,6 +31,7 @@ export default function CreateEnchantModal({ onClose, onCreated }) {
     bow: false, crossbow: false, trident: false, mace: false, shield: false,
     fishing_rod: false, elytra: false
   });
+  
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -42,7 +43,9 @@ export default function CreateEnchantModal({ onClose, onCreated }) {
 
     try {
       setSubmitting(true);
-      const res = await fetch('/api/enchantments', {
+      
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_URL}/api/enchantments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEnchant)
@@ -51,6 +54,7 @@ export default function CreateEnchantModal({ onClose, onCreated }) {
       if (!res.ok) throw new Error('Error creating the enchantment.');
 
       onCreated();
+      onClose();
     } catch (err) {
       alert(err.message);
     } finally {
@@ -116,27 +120,17 @@ export default function CreateEnchantModal({ onClose, onCreated }) {
             </div>
           </div>
 
-          <div>
-            <label className="text-xs text-slate-400 block mb-1">Description</label>
-            <textarea
-              rows="2"
-              placeholder="Describe what the enchantment does..."
-              value={newEnchant.description}
-              onChange={e => setNewEnchant({ ...newEnchant, description: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
-            />
-          </div>
 
           <div>
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 block">Compatible Items</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800 max-h-48 overflow-y-auto">
               {ITEMS_LIST.map(item => (
-                <label key={item.key} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
+                <label key={item.key} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none hover:text-indigo-300 transition-colors">
                   <input
                     type="checkbox"
                     checked={newEnchant[item.key]}
                     onChange={e => setNewEnchant({ ...newEnchant, [item.key]: e.target.checked })}
-                    className="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                    className="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
                   />
                   {item.label}
                 </label>
