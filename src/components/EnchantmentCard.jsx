@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Circle, Info, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, Circle, Info } from 'lucide-react';
 
 const ITEMS_LIST = [
   { key: 'sword', label: 'Sword' },
@@ -21,7 +21,7 @@ const ITEMS_LIST = [
 ];
 
 export default function EnchantmentCard({ item, onToggleFound, onOpenDetails }) {
-  const compatibleItems = ITEMS_LIST.filter(obj => Boolean(item[obj.key]));
+  const compatibleItems = ITEMS_LIST.filter(obj => item[obj.key] === true);
 
   return (
     <div 
@@ -52,7 +52,6 @@ export default function EnchantmentCard({ item, onToggleFound, onOpenDetails }) 
         </p>
       </div>
 
-      {/* Sezione Oggetti Compatibili */}
       <div className="flex flex-wrap gap-1 pt-2 border-t border-slate-800/60">
         {compatibleItems.length > 0 ? (
           compatibleItems.slice(0, 6).map(obj => (
@@ -70,26 +69,7 @@ export default function EnchantmentCard({ item, onToggleFound, onOpenDetails }) 
         )}
       </div>
 
-      {/* NUOVA SEZIONE: Incompatibilità (Conflicts) */}
-      {item.conflicts && item.conflicts.length > 0 && (
-        <div className="flex flex-col gap-1.5 pt-1">
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-rose-400 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> Conflicts with:
-          </span>
-          <div className="flex flex-wrap gap-1">
-            {item.conflicts.map(c => (
-              <span 
-                key={c.id} 
-                className="text-[10px] bg-rose-950/40 text-rose-300 px-2 py-0.5 rounded border border-rose-800/40"
-              >
-                {c.conflictsWith?.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="pt-2 flex items-center justify-between border-t border-slate-800/60">
+      <div className="pt-2 flex items-center justify-between">
         <button
           onClick={(e) => onToggleFound(item.id, item.found, e)}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
