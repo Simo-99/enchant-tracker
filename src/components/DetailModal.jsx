@@ -228,7 +228,7 @@ export default function DetailModal({ enchantment, allEnchantments, onClose, onT
         <div className="border-t border-slate-800 pt-4 flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-amber-400" />
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Incompatibilities & Conflicts</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Conflicts</h4>
           </div>
           
 { console.log('Enchantment conflicts:', enchantment) }{ 
