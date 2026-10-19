@@ -36,11 +36,7 @@ export default function App() {
   const [selectedEnchant, setSelectedEnchant] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Form state per nuovo incantesimo
-  const [newEnchantName, setNewEnchantName] = useState('');
-  const [newEnchantMaxLevel, setNewEnchantMaxLevel] = useState(1);
-  const [newEnchantDesc, setNewEnchantDesc] = useState('');
-  const [creating, setCreating] = useState(false);
+
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +51,7 @@ export default function App() {
       if (!res.ok) throw new Error('Error fetching enchantments from server.');
       const data = await res.json();
       setEnchantments(data);
+      console.log("Dati grezzi ricevuti dalla API:", data);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -322,17 +319,18 @@ export default function App() {
               const compatibleItems = ITEMS_LIST.filter(obj => item[obj.key] === true);
 
               return (
-                <EnchantmentCard 
+              <EnchantmentCard 
               key={item.id} 
               item={item} 
               onToggleFound={toggleFound} 
               onOpenDetails={(id) => {
-                // Qui gestisci l'apertura del modale dettagli, ad esempio:
-                const foundEnchant = enchantments.find(e => e.id === id);
-                setSelectedEnchant(foundEnchant);
+                // Trova l'incantesimo cliccato
+                const found = enchantments.find(e => e.id === id);
+                setSelectedEnchant(found);
+                
                 setShowDetailsModal(true);
-      }}
-                 />
+              }} 
+            />
               );
             })}
           </div>
@@ -350,6 +348,7 @@ export default function App() {
         />
       )}
 
+      
       {/* Details Modal */}
       {selectedEnchant && (
         <DetailModal

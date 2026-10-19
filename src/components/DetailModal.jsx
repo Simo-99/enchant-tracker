@@ -231,57 +231,64 @@ export default function DetailModal({ enchantment, allEnchantments, onClose, onT
             <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Incompatibilities & Conflicts</h4>
           </div>
           
-          {enchantment.conflicts && enchantment.conflicts.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {enchantment.conflicts.map((conflictItem, idx) => {
-                const conflictEnchant = conflictItem.conflictsWith;
-                const targetId = conflictEnchant ? conflictEnchant.id : conflictItem.conflicts_with_id;
+{ console.log('Enchantment conflicts:', enchantment) }{ 
 
-                return (
-                  <div key={idx} className="bg-amber-950/20 border border-amber-900/30 rounded-xl p-2.5 text-xs text-amber-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span>{conflictEnchant ? conflictEnchant.name : `Conflict ID: ${targetId}`}</span>
-                      {conflictEnchant && (
-                        <span className="text-[10px] bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded border border-amber-800/40 uppercase font-mono">
-                          {conflictEnchant.source}
-                        </span>
-                      )}
-                    </div>
-                    
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const confirmName = conflictEnchant ? conflictEnchant.name : `ID ${targetId}`;
-                          if (!window.confirm(`Are you sure you want to remove the conflict with "${confirmName}"?`)) {
-                            return;
-                          }
+enchantment.conflicts && enchantment.conflicts.length > 0 ? (
+  <div className="flex flex-col gap-2">
+    {enchantment.conflicts.map((conflictItem, idx) => {
+      // Puntiamo dritti a conflictsWith per prendere nome e source
+      const conflictEnchant = conflictItem.conflictsWith;
+      const targetId = conflictItem.conflicts_with_id;
 
-                          try {
-                            const res = await fetch(`${API_URL}/api/enchantments/${enchantment.id}/conflicts/${targetId}`, {
-                              method: 'DELETE'
-                            });
-                            if (!res.ok) throw new Error('Error removing the conflict.');
-                            onConflictAdded(enchantment.id);
-                          } catch (err) {
-                            alert(err.message);
-                          }
-                        }}
-                        className="text-amber-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-amber-900/30"
-                        title="Remove conflict"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-xs text-slate-500 italic bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
-              No incompatibilities registered.
-            </p>
+      return (
+        <div key={idx} className="bg-amber-950/20 border border-amber-900/30 rounded-xl p-2.5 text-xs text-amber-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Legge correttamente il nome dalla proprietà conflictsWith */}
+            <span className="font-medium">
+              {conflictEnchant ? conflictEnchant.name : `Conflict ID: ${targetId}`}
+            </span>
+            
+            {conflictEnchant && (
+              <span className="text-[10px] bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded border border-amber-800/40 uppercase font-mono">
+                {conflictEnchant.source}
+              </span>
+            )}
+          </div>
+          
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={async () => {
+                const confirmName = conflictEnchant ? conflictEnchant.name : `ID ${targetId}`;
+                if (!window.confirm(`Are you sure you want to remove the conflict with "${confirmName}"?`)) {
+                  return;
+                }
+
+                try {
+                  const res = await fetch(`${API_URL}/api/enchantments/${enchantment.id}/conflicts/${targetId}`, {
+                    method: 'DELETE'
+                  });
+                  if (!res.ok) throw new Error('Error removing the conflict.');
+                  onConflictAdded(enchantment.id);
+                } catch (err) {
+                  alert(err.message);
+                }
+              }}
+              className="text-amber-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-amber-900/30"
+              title="Remove conflict"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           )}
+        </div>
+      );
+    })}
+  </div>
+) : (
+  <p className="text-xs text-slate-500 italic bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
+    No incompatibilities registered.
+  </p>
+)}
 
           {isAdmin && (
             <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 flex flex-col gap-2 mt-1">
