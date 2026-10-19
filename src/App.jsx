@@ -508,7 +508,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-900 py-4 text-center text-xs text-slate-500">
-        Minecraft Enchantment Tracker • React & Node.js Dashboard
+        Minecraft Enchantment Tracker by BabyOner • React & Node.js Dashboard
       </footer>
     </div>
   );
