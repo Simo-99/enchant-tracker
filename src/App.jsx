@@ -8,6 +8,7 @@ import FilterBar from './components/enchantments/FilterBar';
 import EnchantmentCard from './components/enchantments/EnchantmentCard';
 import CreateEnchantModal from './components/modals/CreateEnchantModal';
 import DetailModal from './components/modals/DetailModal';
+import PlannerView from './components/planner/PlannerView';
 
 export default function App() {
   const {
@@ -24,6 +25,7 @@ export default function App() {
 
   const { isAdmin, handleAdminToggle } = useAdminAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [view, setView] = useState('tracker'); // 'tracker' | 'planner'
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,6 +69,13 @@ export default function App() {
     };
   }, [enchantments]);
 
+  const tabCls = (active) =>
+    `px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+      active
+        ? 'bg-indigo-600 text-white border-indigo-500'
+        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800'
+    }`;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       <Header
@@ -78,52 +87,85 @@ export default function App() {
       />
 
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full flex flex-col gap-6">
-        <FilterBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          sourceFilter={sourceFilter}
-          setSourceFilter={setSourceFilter}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          itemFilter={itemFilter}
-          setItemFilter={setItemFilter}
-          onRefresh={fetchEnchantments}
-        />
+        <div className="flex gap-2">
+          <button onClick={() => setView('tracker')} className={tabCls(view === 'tracker')}>
+            Tracker
+          </button>
+          <button onClick={() => setView('planner')} className={tabCls(view === 'planner')}>
+            Planner fusioni
+          </button>
+        </div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
-            <RefreshCw className="w-8 h-8 animate-spin text-indigo-500" />
-            <p className="text-sm">Loading enchantments...</p>
-          </div>
-        ) : error ? (
-          <div className="bg-red-950/40 border border-red-900/50 rounded-2xl p-6 text-center text-red-200 flex flex-col items-center gap-3">
-            <AlertCircle className="w-8 h-8 text-red-400" />
-            <p className="font-medium">{error}</p>
-            <button
-              onClick={fetchEnchantments}
-              className="mt-2 bg-red-900 hover:bg-red-800 text-white px-4 py-2 rounded-xl text-xs font-medium transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        ) : filteredEnchantments.length === 0 ? (
-          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
-            <p>No enchantments found matching current filters.</p>
-          </div>
+        {view === 'planner' ? (
+          loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
+              <RefreshCw className="w-8 h-8 animate-spin text-indigo-500" />
+              <p className="text-sm">Loading enchantments...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-red-950/40 border border-red-900/50 rounded-2xl p-6 text-center text-red-200 flex flex-col items-center gap-3">
+              <AlertCircle className="w-8 h-8 text-red-400" />
+              <p className="font-medium">{error}</p>
+              <button
+                onClick={fetchEnchantments}
+                className="mt-2 bg-red-900 hover:bg-red-800 text-white px-4 py-2 rounded-xl text-xs font-medium transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <PlannerView enchantments={enchantments} />
+          )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEnchantments.map((item) => (
-              <EnchantmentCard
-                key={item.id}
-                item={item}
-                onToggleFound={toggleFound}
-                onOpenDetails={(id) => {
-                  const found = enchantments.find((e) => e.id === id);
-                  setSelectedEnchant(found);
-                }}
-              />
-            ))}
-          </div>
+          <>
+            <FilterBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              sourceFilter={sourceFilter}
+              setSourceFilter={setSourceFilter}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              itemFilter={itemFilter}
+              setItemFilter={setItemFilter}
+              onRefresh={fetchEnchantments}
+            />
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
+                <RefreshCw className="w-8 h-8 animate-spin text-indigo-500" />
+                <p className="text-sm">Loading enchantments...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-red-950/40 border border-red-900/50 rounded-2xl p-6 text-center text-red-200 flex flex-col items-center gap-3">
+                <AlertCircle className="w-8 h-8 text-red-400" />
+                <p className="font-medium">{error}</p>
+                <button
+                  onClick={fetchEnchantments}
+                  className="mt-2 bg-red-900 hover:bg-red-800 text-white px-4 py-2 rounded-xl text-xs font-medium transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : filteredEnchantments.length === 0 ? (
+              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
+                <p>No enchantments found matching current filters.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredEnchantments.map((item) => (
+                  <EnchantmentCard
+                    key={item.id}
+                    item={item}
+                    onToggleFound={toggleFound}
+                    onOpenDetails={(id) => {
+                      const found = enchantments.find((e) => e.id === id);
+                      setSelectedEnchant(found);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
 
