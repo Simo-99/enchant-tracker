@@ -21,7 +21,13 @@ export const enchantmentApi = {
       body: JSON.stringify({ description }),
     }),
 
-updateItems: (id, itemsData) =>
+  updateCost: (id, cost) =>
+    apiRequest(`/api/enchantments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ cost }),
+    }),
+
+  updateItems: (id, itemsData) =>
     apiRequest(`/api/enchantments/${id}`, {
       method: 'PUT',
       body: JSON.stringify(itemsData),
@@ -32,12 +38,12 @@ updateItems: (id, itemsData) =>
       method: 'DELETE',
     }),
 
-addConflict: (id, conflictsWithId) =>
+  addConflict: (id, conflictsWithId) =>
     apiRequest('/api/conflicts', {
       method: 'POST',
-      body: JSON.stringify({ 
-        enchantment_id: Number(id), 
-        conflicts_with_id: Number(conflictsWithId) 
+      body: JSON.stringify({
+        enchantment_id: Number(id),
+        conflicts_with_id: Number(conflictsWithId),
       }),
     }),
 
