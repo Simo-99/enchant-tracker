@@ -14,9 +14,11 @@ export default function DetailModal({
 }) {
   if (!enchantment) return null;
 
-  const [isEditingDesc, setIsEditingDesc] = useState(false);
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [descText, setDescText] = useState(enchantment.description || '');
-  const [savingDesc, setSavingDesc] = useState(false);
+  const [maxLevelText, setMaxLevelText] = useState('');
+  const [costText, setCostText] = useState('');
+  const [savingInfo, setSavingInfo] = useState(false);
 
   const [isEditingItems, setIsEditingItems] = useState(false);
   const [tempItems, setTempItems] = useState({});
@@ -24,16 +26,38 @@ export default function DetailModal({
 
   const [selectedConflictId, setSelectedConflictId] = useState('');
 
-  const handleSaveDescription = async () => {
+  const hasCost = enchantment.cost !== null && enchantment.cost !== undefined;
+
+  const openEditInfo = () => {
+    setDescText(enchantment.description || '');
+    setMaxLevelText(String(enchantment.max_level ?? ''));
+    setCostText(hasCost ? String(enchantment.cost) : '');
+    setIsEditingInfo(true);
+  };
+
+  const handleSaveInfo = async () => {
+    const maxLevel = maxLevelText.trim();
+    const cost = costText.trim();
+    if (!/^\d+$/.test(maxLevel) || Number(maxLevel) < 1) {
+      alert('Max level must be an integer of at least 1.');
+      return;
+    }
+    if (cost !== '' && !/^\d+$/.test(cost)) {
+      alert('Anvil cost must be a non-negative integer.');
+      return;
+    }
+    const payload = { description: descText, max_level: Number(maxLevel) };
+    if (cost !== '') payload.cost = Number(cost);
+
     try {
-      setSavingDesc(true);
-      await enchantmentApi.updateDescription(enchantment.id, descText);
+      setSavingInfo(true);
+      await enchantmentApi.updateDetails(enchantment.id, payload);
       onConflictAdded(enchantment.id);
-      setIsEditingDesc(false);
+      setIsEditingInfo(false);
     } catch (err) {
-      alert(err.message || 'Error updating description.');
+      alert(err.message || 'Error updating enchantment details.');
     } finally {
-      setSavingDesc(false);
+      setSavingInfo(false);
     }
   };
 
@@ -108,36 +132,33 @@ export default function DetailModal({
           </div>
         </div>
 
-        {/* Description Box */}
+        {/* Info Box: Description, Max Level, Anvil cost */}
         <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
               Description
             </span>
             {isAdmin &&
-              (!isEditingDesc ? (
+              (!isEditingInfo ? (
                 <button
-                  onClick={() => {
-                    setDescText(enchantment.description || '');
-                    setIsEditingDesc(true);
-                  }}
+                  onClick={openEditInfo}
                   className="text-slate-400 hover:text-indigo-400 transition-colors p-1 rounded hover:bg-slate-800/60 flex items-center gap-1 text-xs"
-                  title="Edit description"
+                  title="Edit description, max level and anvil cost"
                 >
                   <Pencil className="w-3.5 h-3.5" /> Edit
                 </button>
               ) : (
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={handleSaveDescription}
-                    disabled={savingDesc}
-                    className="text-emerald-400 hover:text-emerald-300 p-1 rounded hover:bg-emerald-950/40 transition-colors flex items-center gap-1 text-xs"
+                    onClick={handleSaveInfo}
+                    disabled={savingInfo}
+                    className="text-emerald-400 hover:text-emerald-300 p-1 rounded hover:bg-emerald-950/40 transition-colors flex items-center gap-1 text-xs disabled:opacity-50"
                     title="Save"
                   >
                     <Check className="w-4 h-4" /> Save
                   </button>
                   <button
-                    onClick={() => setIsEditingDesc(false)}
+                    onClick={() => setIsEditingInfo(false)}
                     className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition-colors"
                     title="Cancel"
                   >
@@ -147,7 +168,7 @@ export default function DetailModal({
               ))}
           </div>
 
-          {!isEditingDesc ? (
+          {!isEditingInfo ? (
             <p className="text-sm text-slate-300">
               {enchantment.description || 'No description specified for this enchantment.'}
             </p>
@@ -161,11 +182,40 @@ export default function DetailModal({
             />
           )}
 
-          <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span>Max Level:</span>
-            <span className="font-bold text-indigo-400 text-sm font-mono">
-              {enchantment.max_level}
-            </span>
+          <div className="mt-2 pt-2 border-t border-slate-800/80 flex flex-col gap-1 text-xs text-slate-400">
+            <div className="flex items-center justify-between">
+              <span>Max Level:</span>
+              {!isEditingInfo ? (
+                <span className="font-bold text-indigo-400 text-sm font-mono">
+                  {enchantment.max_level}
+                </span>
+              ) : (
+                <input
+                  type="number"
+                  min="1"
+                  value={maxLevelText}
+                  onChange={(e) => setMaxLevelText(e.target.value)}
+                  className="w-20 bg-slate-900 border border-slate-800 rounded-lg px-2 py-0.5 text-sm text-center font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+                />
+              )}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span>Anvil cost:</span>
+              {!isEditingInfo ? (
+                <span className="font-bold text-indigo-400 text-sm font-mono">
+                  {hasCost ? enchantment.cost : '-'}
+                </span>
+              ) : (
+                <input
+                  type="number"
+                  min="0"
+                  value={costText}
+                  onChange={(e) => setCostText(e.target.value)}
+                  className="w-20 bg-slate-900 border border-slate-800 rounded-lg px-2 py-0.5 text-sm text-center font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -256,16 +306,16 @@ export default function DetailModal({
             </h4>
           </div>
 
-{enchantment.conflicts && enchantment.conflicts.length > 0 ? (
+          {enchantment.conflicts && enchantment.conflicts.length > 0 ? (
             <div className="flex flex-col gap-2">
               {enchantment.conflicts.map((conflictItem, idx) => {
                 const conflictEnchant = conflictItem;
                 // L'ID del record di giunzione (da usare per la cancellazione)
                 const pivotId = conflictItem.EnchantmentConflict?.id;
-                
+
                 // L'ID dell'incantesimo in conflitto (utile per la visualizzazione/fallback)
                 const targetId = conflictItem.id;
-                
+
                 const confirmName = conflictEnchant ? conflictEnchant.name : `ID ${targetId}`;
 
                 return (
@@ -288,7 +338,7 @@ export default function DetailModal({
                     {isAdmin && (
                       <button
                         type="button"
-                        onClick={() => handleRemoveConflict(conflictItem.EnchantmentConflict.id, confirmName)}
+                        onClick={() => handleRemoveConflict(pivotId, confirmName)}
                         className="text-amber-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-amber-900/30"
                         title="Remove conflict"
                       >

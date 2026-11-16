@@ -21,10 +21,11 @@ export const enchantmentApi = {
       body: JSON.stringify({ description }),
     }),
 
-  updateCost: (id, cost) =>
+  // description, max_level e cost in una sola richiesta
+  updateDetails: (id, data) =>
     apiRequest(`/api/enchantments/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ cost }),
+      body: JSON.stringify(data),
     }),
 
   updateItems: (id, itemsData) =>
