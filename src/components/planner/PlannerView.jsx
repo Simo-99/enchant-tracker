@@ -3,6 +3,12 @@ import { Plus, X, Calculator, AlertTriangle, CheckCircle2, Search, RefreshCw } f
 import { ITEMS_LIST } from '../../constants/items';
 import { MAX_COST, MAX_ENCHANTS, planAll } from '../../utils/anvil';
 
+// Valori del campo "type" dell'API: N = normale, U = unico, S = abilità
+const TYPE_ABILITY = 'S';
+const TYPE_UNIQUE = 'U';
+const MAX_ABILITY = 1;
+const MAX_UNIQUE = 1;
+
 const inputCls =
   'bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500';
 
@@ -41,17 +47,31 @@ export default function PlannerView({ enchantments }) {
     [selectedIds, enchantments]
   );
 
-  const { available, hiddenByConflict } = useMemo(() => {
-    if (!itemKey) return { available: [], hiddenByConflict: 0 };
+  const abilityCount = useMemo(() => selected.filter((e) => e.type === TYPE_ABILITY).length, [selected]);
+  const uniqueCount = useMemo(() => selected.filter((e) => e.type === TYPE_UNIQUE).length, [selected]);
+
+  const { available, hiddenByConflict, hiddenByLimit } = useMemo(() => {
+    if (!itemKey) return { available: [], hiddenByConflict: 0, hiddenByLimit: 0 };
     const q = search.trim().toLowerCase();
     const compatible = enchantments.filter(
       (e) => e[itemKey] === true && !selectedIds.includes(e.id)
     );
     let hidden = 0;
+    let hiddenLimit = 0;
     const list = compatible.filter((e) => {
       const clash = selectedIds.some((s) => conflictMap.get(e.id)?.has(s));
-      if (clash) hidden++;
-      return !clash;
+      if (clash) {
+        hidden++;
+        return false;
+      }
+      if (
+        (e.type === TYPE_ABILITY && abilityCount >= MAX_ABILITY) ||
+        (e.type === TYPE_UNIQUE && uniqueCount >= MAX_UNIQUE)
+      ) {
+        hiddenLimit++;
+        return false;
+      }
+      return true;
     });
     const filtered = q
       ? list.filter(
@@ -60,8 +80,8 @@ export default function PlannerView({ enchantments }) {
             (e.description && e.description.toLowerCase().includes(q))
         )
       : list;
-    return { available: filtered, hiddenByConflict: hidden };
-  }, [enchantments, itemKey, selectedIds, conflictMap, search]);
+    return { available: filtered, hiddenByConflict: hidden, hiddenByLimit: hiddenLimit };
+  }, [enchantments, itemKey, selectedIds, conflictMap, search, abilityCount, uniqueCount]);
 
   const resetResult = () => {
     setResult(null);
@@ -183,6 +203,11 @@ export default function PlannerView({ enchantments }) {
                 {hiddenByConflict} enchant nascosti perché in conflitto con quelli già scelti.
               </p>
             )}
+            {hiddenByLimit > 0 && (
+              <p className="text-[11px] text-amber-300/80">
+                {hiddenByLimit} enchant nascosti perché hai già raggiunto il limite per Abilità o Unici.
+              </p>
+            )}
             {selectedIds.length >= MAX_ENCHANTS && (
               <p className="text-[11px] text-amber-300/80">
                 Raggiunto il limite di {MAX_ENCHANTS} enchant per oggetto.
@@ -228,9 +253,17 @@ export default function PlannerView({ enchantments }) {
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-200">3. La tua lista</h2>
-              <span className="text-[11px] text-slate-500 font-mono">
-                {selectedIds.length}/{MAX_ENCHANTS}
-              </span>
+              <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                <span className="bg-slate-950 border border-slate-800 text-slate-300 px-2 py-0.5 rounded-lg">
+                  Totale {selectedIds.length}/{MAX_ENCHANTS}
+                </span>
+                <span className="bg-slate-950 border border-slate-800 text-slate-300 px-2 py-0.5 rounded-lg">
+                  Abilità {abilityCount}/{MAX_ABILITY}
+                </span>
+                <span className="bg-slate-950 border border-slate-800 text-slate-300 px-2 py-0.5 rounded-lg">
+                  Unici {uniqueCount}/{MAX_UNIQUE}
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center justify-between gap-2 bg-slate-950/60 border border-slate-800 rounded-xl p-2.5">
