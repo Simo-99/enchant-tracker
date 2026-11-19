@@ -386,10 +386,7 @@ export default function PlannerView({ enchantments }) {
                           <th className="py-2 pr-3">#</th>
                           <th className="py-2 pr-3">Slot sinistro</th>
                           <th className="py-2 pr-3">Slot destro</th>
-                          <th className="py-2 pr-3">Costo</th>
-                          <th className="py-2 pr-3">Risultato</th>
-                          <th className="py-2 pr-3">Lavor.</th>
-                          <th className="py-2">Penalità</th>
+                          <th className="py-2">Costo</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -399,15 +396,12 @@ export default function PlannerView({ enchantments }) {
                             <td className="py-2 pr-3"><Slot s={st.left} /></td>
                             <td className="py-2 pr-3"><Slot s={st.right} /></td>
                             <td
-                              className={`py-2 pr-3 font-mono font-bold ${
+                              className={`py-2 font-mono font-bold ${
                                 st.cost >= 35 ? 'text-amber-300' : 'text-slate-100'
                               }`}
                             >
                               {st.cost}
                             </td>
-                            <td className="py-2 pr-3"><Slot s={st.result} /></td>
-                            <td className="py-2 pr-3 font-mono text-slate-300">{st.result.work}</td>
-                            <td className="py-2 font-mono text-slate-300">+{st.penalty}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -415,11 +409,10 @@ export default function PlannerView({ enchantments }) {
                   </div>
 
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Legenda: <b>S0</b> = oggetto iniziale, <b>S1, S2…</b> = oggetto dopo ogni applicazione,{' '}
-                    <b>L1, L2…</b> = libri originali (nell'ordine della tua lista), <b>B1, B2…</b> = libri intermedi.
-                    Prima di confermare ogni fusione confronta il costo con l'anteprima dell'incudine: se differisce,
-                    fermati. Il modello è quello descritto nelle regole fornite; comportamenti custom non verificati
-                    restano da controllare in gioco.
+                    Gli enchant tra parentesi, per esempio (A + B), sono un libro già combinato nei passaggi
+                    precedenti. Prima di confermare ogni fusione confronta il costo con l'anteprima
+                    dell'incudine: se differisce, fermati. Il modello è quello descritto nelle regole fornite;
+                    comportamenti custom non verificati restano da controllare in gioco.
                   </p>
                 </>
               )}
@@ -441,17 +434,7 @@ function Stat({ label, value, warn }) {
 }
 
 function Slot({ s }) {
-  return (
-    <div>
-      <span
-        className={`font-mono font-bold ${s.isItem ? 'text-indigo-300' : s.label.startsWith('B') ? 'text-purple-300' : 'text-slate-200'}`}
-      >
-        {s.label}
-      </span>
-      <span className="text-slate-500"> · lav. {s.work}</span>
-      <div className="text-[11px] text-slate-400">
-        {s.contents.length ? s.contents.join(', ') : 'nessun enchant'}
-      </div>
-    </div>
-  );
+  if (s.isItem) return <span className="font-bold text-indigo-300">Item</span>;
+  const text = s.contents.length > 1 ? `(${s.contents.join(' + ')})` : s.contents[0];
+  return <span className="font-medium text-slate-100">{text}</span>;
 }
